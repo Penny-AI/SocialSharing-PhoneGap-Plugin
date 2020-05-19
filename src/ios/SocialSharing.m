@@ -7,6 +7,8 @@
 #import <MessageUI/MFMailComposeViewController.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
+#define IS_IOS13orHIGHER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 13.0)
+
 static NSString *const kShareOptionMessage = @"message";
 static NSString *const kShareOptionSubject = @"subject";
 static NSString *const kShareOptionFiles = @"files";
@@ -604,12 +606,21 @@ static NSString *const kShareOptionIPadCoordinates = @"iPadCoordinates";
 
 //  NSData *imageObj = [NSData dataFromBase64String:objectAtIndex0];
   NSString *tmpDir = NSTemporaryDirectory();
-  NSString *path = [tmpDir stringByAppendingPathComponent:@"instagram.igo"];
+  NSString *path;
+  if (IS_IOS13orHIGHER) {
+    path = [tmpDir stringByAppendingPathComponent:@"instagram.ig"];
+  } else {
+    path = [tmpDir stringByAppendingPathComponent:@"instagram.igo"];
+  }
   [UIImageJPEGRepresentation(image, 1.0) writeToFile:path atomically:YES];
 
   _documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:path]];
   _documentInteractionController.delegate = self;
-  _documentInteractionController.UTI = @"com.instagram.exclusivegram";
+  if (IS_IOS13orHIGHER) {
+      _documentInteractionController.UTI = @"com.instagram.photo";
+  } else {
+      _documentInteractionController.UTI = @"com.instagram.exclusivegram";
+  }
 
   if (message != (id)[NSNull null]) {
     // no longer working, so ..
